@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.copycoding.demo.dao.UsersDao">
+	<select id="selectListUsers" parameterType="java.util.HashMap" resultType="UsersVo">
+	<![CDATA[
+		SELECT B.USER_ID AS user_id, B.COMPANY_PARTITION_CODE AS company_partition_code, B.DEPT_CODE AS dept_code, B.USER_NAME_KR AS user_name_kr
+		FROM
+		(
+			SELECT @ROWNUM:=@ROWNUM+1 AS RNUM, A.USER_ID, A.COMPANY_PARTITION_CODE, A.DEPT_CODE, A.USER_NAME_KR
+			FROM
+			(
+				SELECT USER_ID, COMPANY_PARTITION_CODE, DEPT_CODE, USER_NAME_KR
+				FROM USERS, (SELECT @ROWNUM:=0) AS R
+				WHERE GRADE_CODE <> 'X'
+				ORDER BY USER_ID
+			) A, (SELECT @ROWNUM:=0) AS R
+			WHERE @ROWNUM:=@ROWNUM+1 <= 1 * 10
+		) B, (SELECT @ROWNUM:=0) AS R
+		WHERE B.RNUM >= ((1 - 1) * 10) + 1
+	]]>
+	</select>
+	
+	<select id="searchUser" parameterType="UsersVo" resultType="UsersVo">
+		SELECT USER_ID, COMPANY_PARTITION_CODE, DEPT_CODE
+		FROM USERS
+		WHERE COMPANY_PARTITION_CODE = '01'
+		AND USER_ID = #{user_id}
+	</select>
+	
+	<select id="getCount" resultType="int">
+	<![CDATA[
+		SELECT COUNT(*) AS totalCnt
+		FROM USERS
+		WHERE GRADE_CODE <> 'X'
+	]]>
+	</select>
+</mapper>
