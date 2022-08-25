@@ -11,5 +11,7 @@ import com.copycoding.demo.vo.UsersVo;
 public interface UsersDao {
 	public List<UsersVo> selectListUsers(Map<String, Object> usersVo);
 	public UsersVo searchUser(String user_id) throws Exception;
-	int getCount() throws Exception;
+	public int getCount(Map<String, Object> userVo) throws Exception;
+	
+	public void userInfoUpdate(Map<String, Object> reqMap) throws Exception;
 }

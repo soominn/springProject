@@ -4,35 +4,43 @@
 <mapper namespace="com.copycoding.demo.dao.UsersDao">
 	<select id="selectListUsers" parameterType="java.util.HashMap" resultType="UsersVo">
 	<![CDATA[
-		SELECT B.USER_ID AS user_id, B.COMPANY_PARTITION_CODE AS company_partition_code, B.DEPT_CODE AS dept_code, B.USER_NAME_KR AS user_name_kr
-		FROM
+		select B.no, B.user_id as user_id, B.company_partition_code as company_partition_code, B.dept_code as dept_code, B.USER_NAME_KR as user_name_kr, B.e_mail as e_mail
+		FROM 
 		(
-			SELECT @ROWNUM:=@ROWNUM+1 AS RNUM, A.USER_ID, A.COMPANY_PARTITION_CODE, A.DEPT_CODE, A.USER_NAME_KR
-			FROM
-			(
-				SELECT USER_ID, COMPANY_PARTITION_CODE, DEPT_CODE, USER_NAME_KR
-				FROM USERS, (SELECT @ROWNUM:=0) AS R
-				WHERE GRADE_CODE <> 'X'
-				ORDER BY USER_ID
-			) A, (SELECT @ROWNUM:=0) AS R
-			WHERE @ROWNUM:=@ROWNUM+1 <= 1 * 10
-		) B, (SELECT @ROWNUM:=0) AS R
-		WHERE B.RNUM >= ((1 - 1) * 10) + 1
+		    select A.no, A.user_id, A.company_partition_code, A.dept_code, A.USER_NAME_KR, A.e_mail
+		    FROM (
+				SELECT @rownum := @rownum + 1 as no, user_id, company_partition_code, dept_code, USER_NAME_KR, e_mail
+				FROM (SELECT @rownum :=0) tmp, users
+				WHERE grade_code = 'O'
+				ORDER BY user_id
+			) A
+		    WHERE no <= #{page}*#{rows}
+		 ) B
+		WHERE B.no >= ((#{page}-1)*#{rows})+1
 	]]>
 	</select>
 	
 	<select id="searchUser" parameterType="UsersVo" resultType="UsersVo">
-		SELECT USER_ID, COMPANY_PARTITION_CODE, DEPT_CODE
+		SELECT USER_ID, COMPANY_PARTITION_CODE, DEPT_CODE, USER_NAME_KR, E_MAIL
 		FROM USERS
-		WHERE COMPANY_PARTITION_CODE = '01'
-		AND USER_ID = #{user_id}
+		WHERE <!-- COMPANY_PARTITION_CODE = '01'
+		AND --> USER_ID = #{user_id}
+		AND GRADE_CODE = 'O'
 	</select>
 	
 	<select id="getCount" resultType="int">
-	<![CDATA[
 		SELECT COUNT(*) AS totalCnt
 		FROM USERS
-		WHERE GRADE_CODE <> 'X'
-	]]>
+		WHERE GRADE_CODE = 'O'
+		<if test='user_name_kr != null and user_name_kr != ""'>
+			AND USER_NAME_KR = #{user_name_kr}
+		</if>
 	</select>
+	
+	<update id="userInfoUpdate" parameterType="java.util.HashMap">
+		UPDATE USERS
+		SET USER_NAME_KR = #{user_name_kr}, E_MAIL = #{e_mail}
+		WHERE USER_ID = #{user_id}
+		<!-- AND COMPANY_PARTITION_CODE = '01' -->
+	</update>
 </mapper>
